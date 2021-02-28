@@ -1,35 +1,40 @@
-function [euler_points] = ej5(frequency, color)
+function [euler_points] = ej5(frequency)
 
-    %clc; close all;
-    
+    clc;
+
     euler_points = NaN;
 
     R = 2;
     L = 0.1;
     C = 250e-6;
     A = 10;
+    f = 22220;
     f = frequency;
+    w = 2*pi*f;
+    %w1 = 20*2*pi;
+    %w2 = 200*2*pi;
+    %w3 = 2000*2*pi;
+    %w4 = 20000*2*pi;
 
-    ue = @(x) A*sin(2*pi*20*x) + A*sin(2*pi*200*x) + A*sin(2*pi*2000*x) + A*sin(2*pi*20000*x);
-    %ue = @(x) A*sin(2*pi*20*x);
-    s0 = -1/(2*R*C);
-    s1 = s0 - sqrt((s0)^2 - 1/(L*C));
-    s2 = s0 + sqrt((s0)^2 - 1/(L*C));
-    v1 = 1/(L*C);
-    v2 = (2*pi*f);
-    A_ = [v1-v2^2, v2/(R*C); v1 - v2/(R*C), -(v2^2)];
-    b_ = [-(A)*(v2^2); 0];
-    alpha_and_beta = A_\b_;
-    alpha = alpha_and_beta(1);
-    beta = alpha_and_beta(2);
-    particular_solution = @(x) alpha*sin(2*pi*f*x) + beta*cos(2*pi*f*x);
-    homo_solution = @(x) (A/(s1-s2))*(s1*e.^(s1*x) + s2*e.^(s2*x));
-    real_solution = @(x) homo_solution(x) + particular_solution(x);
-
-    F = @(x) ue(x);
-    d2_us = @(x, us, dus) ( -dus/(R*C) - us/(L*C) - F(x) ); % ecuacion diferencial
+    ue = @(x) A*sin(w*x);
+    %ue = @(x) A*sin(w1*x) + A*sin(w2*x) + A*sin(w3*x) + A*sin(w4*x);
+    %uepp = @(x) -A*(w1^2)*sin(w1*x) - A*(w2^2)*sin(w2*x) - A*(w3^2)*sin(w3*x) - A*(w4^2)*sin(w4*x);
+    uepp = @(x) -A*(w^2)*sin(w*x);
+    d2_us = @(x, us, dus) ( -(dus)/(R*C) - (us)/(L*C) + uepp(x) );
     initial_conditions_us = 0;
     initial_conditions_dus = 2*A*pi*f;
+
+    % solucion analitica
+    %m1 = [ -w^2+1/(L*C), -w/(R*C); w/(R*C), 1/(L*C)-w^2 ];
+    %m2 = [ -A*w^2; 0];
+    %alpha_and_beta = inv(m1)*m2;
+    %Alpha = alpha_and_beta(1);
+    %Beta = alpha_and_beta(2);
+    %l1 = ( -1/(R*C) - sqrt( (1/(R*C))^2 - 4/(L*C) )) / (2);
+    %l2 = ( -1/(R*C) + sqrt( (1/(R*C))^2 - 4/(L*C) )) / (2);
+    %c1 = ( 2*pi*A*f - Alpha*w + Beta*l2 ) / ( l1 - l2);
+    %c2 = (( - 2*pi*A*f + Alpha*w - Beta*l2 ) / ( l1 - l2)) - (Beta);
+    %us = @(x) c1*exp(l1*x) + c2*exp(l2*x) + Alpha*sin(w*x) + Beta*cos(w*x);
 
     h = 1e-7;
     interval = [0, 3e-3];
@@ -40,24 +45,20 @@ function [euler_points] = ej5(frequency, color)
     % aproximo la solucion por el metodo de Euler
     [euler_points] = euler(d2_us, [initial_conditions_us, initial_conditions_dus], interval, h);
 
-    % grafico las curvas
-    %figure(methods_figures);
-    %hold off; plot(tms, real_solution(t), 'b;Solución analítica;'); hold on;
-
-    % señal de entrada
-    %plot(tms, ue(t), ';Señal de Entrada;', 'color', [0.1, 0.9, 0.3]);
+    hold off;
+    plot(tms, euler_points(:, 2), 'r;Us(t);'); 
     hold on;
-    plot(tms, euler_points(:, 2), color); 
+    %plot(tms, us(t), 'm;Us(t) Analitica;');
+    %hold on;
+    %plot(tms, ue(t), 'color', [0.1, 1, 0.1], ';Ue(t);');
+    plot(tms, ue(t), 'b;Ue(t);');
 
-    %title_str = strcat('Frecuencia: ', num2str(f), 'hz');
-    %error_str = strcat('error-', num2str(f), 'hz');
-    %disp(title_str);
-    %title(title_str);
+    xlabel('Tiempo (milisegundos)', 'FontSize', 28);
+    ylabel('Voltage (Volts)', 'FontSize', 28);
+    set([gca; findall(gca, 'Type','text')], 'FontSize', 24);
+    set([gca; findall(gca, 'Type','text')], 'FontName', 'Times New Roman');
+    set([gca; findall(gca, 'Type','line')], 'linewidth', 2);
 
-    save_plots('ej5-out-singles', 'ej5-b');
-    %save_plots(strcat(title_str, '-ue-2'), 'ej5');
-    %save_plots(error_str, 'ej5', errors_figures, 'Error relativo');
+    %save_plots('suma de sinusoides', 'ej5-b');
 
 end
-
-
