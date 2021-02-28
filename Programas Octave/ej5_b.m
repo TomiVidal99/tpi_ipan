@@ -13,6 +13,6 @@ function ej5_b()
     ue = @(x) A*sin(2*pi*20*x) + A*sin(2*pi*200*x) + A*sin(2*pi*2000*x) + A*sin(2*pi*20000*x);
     plot(p20(:, 1)*1000, ue(p20(:, 1)), 'b;Ue(t);');
 
-    save_plots('sumas individuales', 'ej5-b');
+    %save_plots('suma de las salidas individuales', 'ej5-b');
 
 end

@@ -1,33 +1,32 @@
-function [new_samples] = ej6(f, h)
+function [new_samples] = ej6()
 
     clc;
+    new_samples = NaN;
 
-    euler_points = NaN;
+    audioFile = load('./../TP_2020_archivos/audio.mat');
+    signals = audioFile.sig;
+    h = audioFile.h;
 
     R = 2;
     L = 0.1;
     C = 250e-6;
     A = 10;
-    w = 2*pi*f;
+    f = sum(signals);
 
-    ue = @(x) f;
-    %uepp = @(x) -A*(w^2)*sin(w*x);
+    ue = @(x) 0;
+    for (i = 1:length(signals))
+        ue = @(x) ue(x) + A*sin(2*pi*signals(i)*x);
+    end
+
+    % busco la segunda derivada de la señal de entrada con un metodo numerico
     uepp = @(x) 0;
-    d2_us = @(x, us, dus) ( -dus/(R*C) - us/(L*C) - uepp(x) );
+    for (i = 1:length(signals))
+        uepp = @(x) uepp(x) + (-A)*((2*pi*signals(i))^2)*sin(2*pi*signals(i)*x);
+    end
+
+    d2_us = @(x, us, dus) ( -(dus)/(R*C) - (us)/(L*C) + uepp(x) );
     initial_conditions_us = 0;
     initial_conditions_dus = 2*A*pi*f;
-
-    % solucion analitica
-    m1 = [ -w^2+1/(L*C), -w/(R*C); w/(R*C), 1/(L*C)-w^2 ];
-    m2 = [ -A*w^2; 0];
-    alpha_and_beta = inv(m1)*m2;
-    Alpha = alpha_and_beta(1);
-    Beta = alpha_and_beta(2);
-    l1 = ( -1/(R*C) - sqrt( (1/(R*C))^2 - 4/(L*C) )) / (2);
-    l2 = ( -1/(R*C) + sqrt( (1/(R*C))^2 - 4/(L*C) )) / (2);
-    c1 = ( 2*pi*A*f - Alpha*w + Beta*l2 ) / ( l1 - l2);
-    c2 = ( -Beta - 2*pi*A*f + Alpha*w - Beta*l2 ) / ( l1 - l2);
-    us = @(x) c1*exp(l1*x) + c2*exp(l2*x) + Alpha*sin(w*x) + Beta*cos(w*x);
 
     h = 1e-7;
     interval = [0, 3e-3];
@@ -38,20 +37,20 @@ function [new_samples] = ej6(f, h)
     % aproximo la solucion por el metodo de Euler
     [euler_points] = euler(d2_us, [initial_conditions_us, initial_conditions_dus], interval, h);
 
-
     hold off;
-    plot(tms, euler_points(:, 2), 'c;Us(t) Euler;'); 
+    plot(tms, euler_points(:, 2), 'r;Us(t);'); 
     hold on;
-    plot(tms, us(t), 'm;Us(t) Analitica;');
-    %hold on;
-    %plot(tms, ue(t), 'color', [0.1, 1, 0.1], ';Ue(t);');
-    plot(tms, ue(t), 'b;Ue(t);');
+    plot(tms, ue(t), 'color', [0.1, 1, 0.1], ';Ue(t);');
 
-    xlabel('Tiempo (milisegundos)', 'FontSize', 28);
-    ylabel('Voltage (Volts)', 'FontSize', 28);
+    %xlabel('Tiempo (milisegundos)', 'FontSize', 28);
+    %ylabel('Voltage (Volts)', 'FontSize', 28);
     set([gca; findall(gca, 'Type','text')], 'FontSize', 24);
     set([gca; findall(gca, 'Type','text')], 'FontName', 'Times New Roman');
     set([gca; findall(gca, 'Type','line')], 'linewidth', 2);
+
+    %str_title = cstrcat('Frecuencia: ', num2str(f), 'Hz');
+    %title(str_title);
+    %save_plots(cstrcat('frecuencia ', num2str(f)), 'ej5');
 
 end
 

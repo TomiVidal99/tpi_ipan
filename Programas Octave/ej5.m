@@ -8,13 +8,13 @@ function [euler_points] = ej5(frequency)
     L = 0.1;
     C = 250e-6;
     A = 10;
-    f = 22220;
+    %f = 22220;
     f = frequency;
     w = 2*pi*f;
-    %w1 = 20*2*pi;
-    %w2 = 200*2*pi;
-    %w3 = 2000*2*pi;
-    %w4 = 20000*2*pi;
+    w1 = 20*2*pi;
+    w2 = 200*2*pi;
+    w3 = 2000*2*pi;
+    w4 = 20000*2*pi;
 
     ue = @(x) A*sin(w*x);
     %ue = @(x) A*sin(w1*x) + A*sin(w2*x) + A*sin(w3*x) + A*sin(w4*x);
@@ -48,10 +48,7 @@ function [euler_points] = ej5(frequency)
     hold off;
     plot(tms, euler_points(:, 2), 'r;Us(t);'); 
     hold on;
-    %plot(tms, us(t), 'm;Us(t) Analitica;');
-    %hold on;
-    %plot(tms, ue(t), 'color', [0.1, 1, 0.1], ';Ue(t);');
-    plot(tms, ue(t), 'b;Ue(t);');
+    plot(tms, ue(t), 'color', [0.1, 1, 0.1], ';Ue(t);');
 
     xlabel('Tiempo (milisegundos)', 'FontSize', 28);
     ylabel('Voltage (Volts)', 'FontSize', 28);
@@ -59,6 +56,8 @@ function [euler_points] = ej5(frequency)
     set([gca; findall(gca, 'Type','text')], 'FontName', 'Times New Roman');
     set([gca; findall(gca, 'Type','line')], 'linewidth', 2);
 
-    %save_plots('suma de sinusoides', 'ej5-b');
+    str_title = cstrcat('Frecuencia: ', num2str(f), 'Hz');
+    title(str_title);
+    %save_plots(cstrcat('frecuencia ', num2str(f)), 'ej5');
 
 end
